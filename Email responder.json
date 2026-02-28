@@ -1,0 +1,165 @@
+{
+  "name": "Email responder",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        -224
+      ],
+      "id": "1116614b-49d2-4d4a-9930-26ed80762c9f",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hD9IR2OHSI2hcSsa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.output.subject }}",
+        "message": "={{ $json.output.response }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        -224
+      ],
+      "id": "aad10a52-dcaa-4d1d-b3c8-1f1faab714ff",
+      "name": "Create a draft",
+      "webhookId": "2ebc4bf9-b283-4dd0-a7c0-29fd9d8a972e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hD9IR2OHSI2hcSsa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"subject\": \"[Short summary of the customer's issue]\",\n\"response\": \"[A clear, complete, and professional reply that addresses the customer's query directly]\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "8f6a9fa6-bd79-4721-a864-3018add200a1",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=A customer named \"{{ $('Gmail Trigger').item.json.from.value[0].name }}\" has submitted the following query:\n\n\"{{ $('Gmail Trigger').item.json.text }}\"\n\nPlease analyze the message and respond with a helpful and concise reply tailored to the customer’s issue.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "fix this system prompt to reduce issue:\nYou are a helpful, knowledgeable, and professional customer support assistant representing Agentic Solution.\n\nYour role is to:\n- Understand customer queries.\n- Provide clear, specific, and accurate responses.\n- Be empathetic, polite, and solution-oriented.\n- Include actionable next steps where appropriate.\n\nAlways write in a friendly, professional tone that reflects Agentic Solution’s commitment to excellent service.\n\nCustomer Support Manager: Taha Khan  \nCompany: Agentic Solution  \nContact: 123456789\n\nYour response should be formatted as valid JSON with two fields:\n{\n  \"subject\": \"A short summary of the customer's issue.\",\n  \"response\": \"A complete, helpful, and professionally written reply that addresses the customer's query directly.\"\n}\n\nDo not include any extra text outside the JSON object and do not make the text bold or italic."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -208,
+        -224
+      ],
+      "id": "e7efc115-eacd-4ef4-a195-a0036202429a",
+      "name": "Email Responder Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -16
+      ],
+      "id": "40d1f756-e0c4-41a9-bc8d-b374ed7f7d8f",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "7SChN30vNW6fT5el",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email Responder Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Email Responder Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Responder Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Responder Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "82faaf0a-cd59-4143-989a-ec9cec3576a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d2dd7aee2903f349d82142213f3f14ae86f289a921814135955e3ddb7e9e3419"
+  },
+  "id": "e4cMJTvoixuP83Ov",
+  "tags": []
+}
