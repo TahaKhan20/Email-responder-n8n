@@ -1,4 +1,4 @@
-# 📧 AI Email Draft Responder – n8n + GPT
+# 📧 AI Email Responder – n8n
 
 ## Overview
 
